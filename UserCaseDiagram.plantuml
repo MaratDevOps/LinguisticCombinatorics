@@ -1,0 +1,20 @@
+@startuml UserCaseMain
+
+actor AdministratorVPN
+actor Owner 
+actor User
+Owner --|> AdministratorVPN
+
+rectangle "VPN Server manager" {  
+    AdministratorVPN -- (VPN administration)
+    User -- (VPN administration for User)
+    (VPN administration) ..> (User administration)
+    (VPN administration)..> (View the list of self ssconfig)
+    (User administration) ..> (View the list of SS-config)
+    (View the list of SS-config) ..> (Greate) 
+    (View the list of SS-config) ..> (Delete)
+   
+    (VPN administration for User) ..> (View the list of self ssconfig)
+
+}
+@enduml
