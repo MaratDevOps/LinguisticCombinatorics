@@ -1,20 +1,20 @@
 @startuml UserCaseMain
 
-actor AdministratorVPN
-actor Owner 
+actor Administrator
+actor Teacher 
 actor User
-Owner --|> AdministratorVPN
+Administrator --|> Teacher
 
-rectangle "VPN Server manager" {  
-    AdministratorVPN -- (VPN administration)
-    User -- (VPN administration for User)
-    (VPN administration) ..> (User administration)
-    (VPN administration)..> (View the list of self ssconfig)
-    (User administration) ..> (View the list of SS-config)
-    (View the list of SS-config) ..> (Greate) 
-    (View the list of SS-config) ..> (Delete)
-   
-    (VPN administration for User) ..> (View the list of self ssconfig)
-
+rectangle "Linguistic Combinatorics" {  
+    User -- (Select Language)
+    /'доработать: на каждый язык свой бот'/
+    (Select Language) ..> (Combinatorics)
+    (Select Language) ..> (Listening)
+    (Combinatorics) --> (Select Level)
+    (Select Level) --> (Сompleting the exercise)
+    
+    (Teacher)..> (Edit exercise)
+    (Administrator) ..> (Edit Language)
+    
 }
 @enduml
