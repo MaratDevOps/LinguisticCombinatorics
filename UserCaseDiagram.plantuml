@@ -1,20 +1,27 @@
 @startuml UserCaseMain
 
+actor User
 actor Administrator
 actor Teacher 
-actor User
+
 Administrator --|> Teacher
 
 rectangle "Linguistic Combinatorics" {  
     User -- (Select Language)
-    /'доработать: на каждый язык свой бот'/
+    note right 
+    доработать: на каждый язык свой бот
+    end note
     (Select Language) ..> (Combinatorics)
     (Select Language) ..> (Listening)
     (Combinatorics) --> (Select Level)
-    (Select Level) --> (Сompleting the exercise)
+    (Select Level) --> (Сompleting exercise)
     
     (Teacher)..> (Edit exercise)
-    (Administrator) ..> (Edit Language)
+    note right
+    редактирование осуществляется загрузкой и выгрузкой Excel файла
+    end note
+    (Administrator) .> (Edit Language)
+    (Administrator) .> (Edit User)
     
 }
 @enduml
