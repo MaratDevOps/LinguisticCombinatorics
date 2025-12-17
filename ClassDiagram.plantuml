@@ -1,0 +1,103 @@
+@startuml
+title Class Diagram: Completing Exercise
+
+
+class Bot {
+  +selectExerciseLevel(level)
+  +getRandomQuestion(level)
+  +showQuestion(question)
+  +showAnswers(question)
+  +checkAnswer(answer)
+  +showHint()
+  +finishQuestion()
+  +exitExercise()
+}
+note right of Bot
+  Класс Bot отвечает за управление логикой выполнения упражнения
+  и координацию взаимодействия между пользователем и системой.
+end note
+
+class Exercise {
+  -level
+  -currentQuestion
+  +start()
+  +nextQuestion()
+}
+note top of Exercise
+  Exercise — доменная сущность (Entity), 
+  представляющая одно упражнение пользователя.
+  Класс хранит состояние прохождения упражнения и
+  связывает вопросы, ответы и прогресс пользователя.
+end note
+
+class Question {
+  -id
+  -text
+  -isCompleted
+  +getParts()
+}
+note right of Question
+  Question агрегирует Answer
+end note
+
+class Answer {
+  -id
+  -text
+  -isCorrect
+}
+
+note right of Answer
+  Question агрегирует Answer
+end note
+
+class Hint {
+  -text
+}
+
+class AnswerPanel {
+  +displayAnswers()
+  +highlightCorrect()
+}
+
+class AnswerButton {
+  -text
+  -state
+  +select()
+}
+note bottom of AnswerButton
+ UI-представление Answer
+end note
+
+class QuestionRepository {
+  +getRandomByLevel(level): Question
+}
+
+class AnswerRepository {
+  +getByQuestion(questionId): List<Answer>
+}
+note top of AnswerRepository
+ Repository — вынесены отдельно (чистая архитектура)
+end note
+
+class RDBMS
+note bottom of RDBMS
+ RDBMS не содержит логики, только связь
+end note
+
+
+
+Bot --> Exercise
+Exercise --> Question
+Question "1" --> "*" Answer
+Question --> Hint
+
+Bot --> QuestionRepository
+Bot --> AnswerRepository
+
+QuestionRepository --> RDBMS
+AnswerRepository --> RDBMS
+
+Bot --> AnswerPanel
+AnswerPanel --> AnswerButton
+
+@enduml
