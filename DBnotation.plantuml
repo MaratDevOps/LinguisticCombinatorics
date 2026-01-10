@@ -1,0 +1,36 @@
+@startuml
+!define TABLE(x) entity x << (T,#FFAAAA) >>
+!define PK(x) <b>x</b>
+
+title Physical DB Diagram: Learning Exercise
+
+TABLE(Exercise) {
+  PK(id) : BIGINT
+  title : VARCHAR
+}
+
+TABLE(Question) {
+  PK(id) : BIGINT
+  exercise_id : BIGINT
+  text : TEXT
+}
+
+TABLE(SubQuestion) {
+  PK(id) : BIGINT
+  question_id : BIGINT
+  seq_num : INT
+  pointing : BOOLEAN
+  text : TEXT
+}
+
+TABLE(Option) {
+  PK(id) : BIGINT
+  sub_question_id : BIGINT
+  text : TEXT
+}
+
+Exercise ||--o{ Question : "1:N"
+Question ||--o{ SubQuestion : "1:N"
+SubQuestion ||--o{ Option : "1:N"
+
+@enduml

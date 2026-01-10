@@ -1,0 +1,41 @@
+-- Включаем поддержку внешних ключей
+PRAGMA foreign_keys = ON;
+
+-- Таблица Exercise
+CREATE TABLE Exercise (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL
+);
+
+-- Таблица Question
+CREATE TABLE Question (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    exercise_id INTEGER NOT NULL,
+    text TEXT NOT NULL,
+    FOREIGN KEY (exercise_id) REFERENCES Exercise(id) ON DELETE CASCADE
+);
+
+-- Таблица SubQuestion
+CREATE TABLE SubQuestion (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    question_id INTEGER NOT NULL,
+    seq_num INTEGER NOT NULL,
+    pointing TEXT,
+    text TEXT NOT NULL,
+    FOREIGN KEY (question_id) REFERENCES Question(id) ON DELETE CASCADE,
+    UNIQUE (question_id, seq_num)  -- гарантируем уникальность seq_num в рамках вопроса
+);
+
+-- Таблица Option
+CREATE TABLE Option (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    sub_question_id INTEGER NOT NULL,
+    text TEXT NOT NULL,
+    is_correct INTEGER DEFAULT 0, -- 0 = false, 1 = true
+    FOREIGN KEY (sub_question_id) REFERENCES SubQuestion(id) ON DELETE CASCADE
+);
+
+-- Индексы для ускорения поиска
+CREATE INDEX idx_question_exercise ON Question(exercise_id);
+CREATE INDEX idx_subquestion_question ON SubQuestion(question_id);
+CREATE INDEX idx_option_subquestion ON Option(sub_question_id);

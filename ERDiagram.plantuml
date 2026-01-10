@@ -1,0 +1,27 @@
+@startuml
+title ER Diagram: Learning Exercise Structure
+' Концептуальная ER-модель обучающей системы (подвопросы)
+
+entity Exercise {
+  Text
+}
+
+entity Question {
+  Text
+}
+
+entity SubQuestion {
+  SeqNum
+  pointing
+  Text
+}
+
+entity Option {
+  Text
+}
+
+Exercise ||--o{ Question : consists of
+Question ||--o{ SubQuestion : decomposes into
+SubQuestion ||--o{ Option : has
+
+@enduml
