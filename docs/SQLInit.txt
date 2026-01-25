@@ -31,7 +31,6 @@ CREATE TABLE Option (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     sub_question_id INTEGER NOT NULL,
     text TEXT NOT NULL,
-    is_correct INTEGER DEFAULT 0, -- 0 = false, 1 = true
     FOREIGN KEY (sub_question_id) REFERENCES SubQuestion(id) ON DELETE CASCADE
 );
 

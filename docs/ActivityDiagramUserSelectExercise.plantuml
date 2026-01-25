@@ -1,0 +1,24 @@
+@startuml Сompleting exercise
+title Activity: Select exercise 
+start
+
+:Пользователь вводит /Start;
+
+
+:Бот выдает две кнопки: Combinatorics, Listening;
+   
+:Пользователь выбирает кнопку;
+
+if (Combinatorics) then
+  :Бот выдает кнопки-список упражнений; 
+  :Пользователь выбирает упражнение;
+elseif (Listening) then 
+    :Бот выдает кнопки-список упражнений;
+    :Пользователь выбирает упражнение;
+else
+    stop
+endif
+:Пользователь проходит упраженение;
+stop
+
+@enduml
