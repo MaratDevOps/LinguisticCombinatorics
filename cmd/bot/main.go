@@ -174,45 +174,107 @@ func handleCallbackQuery(bot *tgbotapi.BotAPI, CallbackQuery *tgbotapi.CallbackQ
 			log.Printf("Ошибка конвертации: %v", err)
 		}
 		//questions := initData()
-		currentAnswer, nextAnswer, currentIsRight, lastSubquestion, prepinanie, err := ActuallyAnswer(optionID)
+		currentAnswer, nextAnswer, currentIsRight, lastSubquestion, lastQuestion, prepinanie, err := ActuallyAnswer(optionID)
 		log.Printf(strconv.FormatBool(lastSubquestion)) //для компилятора
 		if err != nil {
 			log.Printf("не удалось найти вопрос: %v", err)
 		}
 		if currentIsRight {
-			firstQuestions := nextAnswer
-			//log.Printf("Вариант ответа: %v", firstQuestions.Options[1])
-			InlineKeyboardButtonArray := []tgbotapi.InlineKeyboardButton{}
-			keyboard := [][]tgbotapi.InlineKeyboardButton{}
-			lineSize := 3
-			lineX := 1
-			for key, ans := range firstQuestions.Options {
-				InlineKeyboardButtonArray = append(InlineKeyboardButtonArray, tgbotapi.NewInlineKeyboardButtonData(ans, fmt.Sprintf("ansID=%d;", key)))
-				//log.Printf("кнопка: %v", fmt.Sprintf("ansID=%d;", key))
-				if lineX == lineSize {
-					keyboard = append(keyboard, InlineKeyboardButtonArray)
-					InlineKeyboardButtonArray = []tgbotapi.InlineKeyboardButton{}
-					lineX = 0
+			if lastQuestion {
+				editText := tgbotapi.EditMessageTextConfig{
+					BaseEdit: tgbotapi.BaseEdit{
+						ChatID:    chatID,
+						MessageID: msgID,
+						//ReplyMarkup: &tempMarkup,
+					},
+					Text:      fmt.Sprintf("%s%s%s ✅", msgText, currentAnswer.Answer, prepinanie),
+					ParseMode: "",
 				}
-				lineX++
-			}
-			keyboard = append(keyboard, InlineKeyboardButtonArray)
-			tempMarkup := tgbotapi.NewInlineKeyboardMarkup(keyboard...)
-			//newMsg.ReplyMarkup = &tempMarkup
+				bot.Send(editText)
+				//финальное сообщение
+				editText = tgbotapi.EditMessageTextConfig{
+					BaseEdit: tgbotapi.BaseEdit{
+						ChatID:    chatID,
+						MessageID: msgID,
+						//ReplyMarkup: &tempMarkup,
+					},
+					Text:      fmt.Sprintf("Упражнение закончено ✅"),
+					ParseMode: "",
+				}
+				bot.Send(editText)
+				LevelsList(bot, CallbackQuery.Message)
+			} else {
+				if lastSubquestion {
+					editText := tgbotapi.EditMessageTextConfig{
+						BaseEdit: tgbotapi.BaseEdit{
+							ChatID:    chatID,
+							MessageID: msgID,
+							//ReplyMarkup: &tempMarkup,
+						},
+						Text:      fmt.Sprintf("%s%s%s ✅", msgText, currentAnswer.Answer, prepinanie),
+						ParseMode: "",
+					}
+					bot.Send(editText)
+					//новое поле кнопок
+					InlineKeyboardButtonArray := []tgbotapi.InlineKeyboardButton{}
+					keyboard := [][]tgbotapi.InlineKeyboardButton{}
+					lineSize := 3
+					lineX := 1
+					for key, ans := range nextAnswer.Options {
+						InlineKeyboardButtonArray = append(InlineKeyboardButtonArray, tgbotapi.NewInlineKeyboardButtonData(ans, fmt.Sprintf("ansID=%d;", key)))
+						//log.Printf("кнопка: %v", fmt.Sprintf("ansID=%d;", key))
+						if lineX == lineSize {
+							keyboard = append(keyboard, InlineKeyboardButtonArray)
+							InlineKeyboardButtonArray = []tgbotapi.InlineKeyboardButton{}
+							lineX = 0
+						}
+						lineX++
+					}
+					keyboard = append(keyboard, InlineKeyboardButtonArray)
 
-			editText := tgbotapi.EditMessageTextConfig{
-				BaseEdit: tgbotapi.BaseEdit{
-					ChatID:      chatID,
-					MessageID:   msgID,
-					ReplyMarkup: &tempMarkup,
-				},
-				Text:      fmt.Sprintf("%s%s%s", msgText, currentAnswer.Answer, prepinanie),
-				ParseMode: "",
+					newMsg := tgbotapi.NewMessage(chatID, fmt.Sprintf("Переведите предложение:\n%s \nПеревод: ", nextAnswer.Question))
+					tempMarkup := tgbotapi.NewInlineKeyboardMarkup(keyboard...)
+					newMsg.ReplyMarkup = &tempMarkup
+					bot.Send(newMsg)
+				} else {
+					firstQuestions := nextAnswer
+					//log.Printf("Вариант ответа: %v", firstQuestions.Options[1])
+					InlineKeyboardButtonArray := []tgbotapi.InlineKeyboardButton{}
+					keyboard := [][]tgbotapi.InlineKeyboardButton{}
+					lineSize := 3
+					lineX := 1
+					for key, ans := range firstQuestions.Options {
+						InlineKeyboardButtonArray = append(InlineKeyboardButtonArray, tgbotapi.NewInlineKeyboardButtonData(ans, fmt.Sprintf("ansID=%d;", key)))
+						//log.Printf("кнопка: %v", fmt.Sprintf("ansID=%d;", key))
+						if lineX == lineSize {
+							keyboard = append(keyboard, InlineKeyboardButtonArray)
+							InlineKeyboardButtonArray = []tgbotapi.InlineKeyboardButton{}
+							lineX = 0
+						}
+						lineX++
+					}
+					keyboard = append(keyboard, InlineKeyboardButtonArray)
+					tempMarkup := tgbotapi.NewInlineKeyboardMarkup(keyboard...)
+					//newMsg.ReplyMarkup = &tempMarkup
+					if prepinanie == " " {
+						prepinanie = "\u00A0"
+					}
+					editText := tgbotapi.EditMessageTextConfig{
+						BaseEdit: tgbotapi.BaseEdit{
+							ChatID:      chatID,
+							MessageID:   msgID,
+							ReplyMarkup: &tempMarkup,
+						},
+						Text:      fmt.Sprintf("%s%s%s", msgText, currentAnswer.Answer, prepinanie),
+						ParseMode: "",
+					}
+					log.Printf("msgText: %s", msgText)
+					log.Printf("Answer: %s", currentAnswer.Answer)
+					fmt.Printf("prepinanie = %q, len = %d\n", prepinanie, len(prepinanie))
+					log.Printf(fmt.Sprintf("%s%s%s", msgText, prepinanie, currentAnswer.Answer))
+					bot.Send(editText)
+				}
 			}
-			log.Printf("msgText: %s", msgText)
-			log.Printf("Answer: %s", currentAnswer.Answer)
-			log.Printf("prepinanie: %s", prepinanie)
-			bot.Send(editText)
 
 		} else {
 			firstQuestions := currentAnswer
@@ -392,8 +454,8 @@ func selectActuallyAnswer(questions [][]Item, optionID int64) (current *Item, ne
 	return current, next, currentIsRight, prepinanie, nil
 }
 
-func ActuallyAnswer(optionID int64) (current *Item, next *Item, currentIsRight bool, lastSubquestion bool, prepinanie string, err error) {
-	db, err := sql.Open("sqlite", "C:\\Work\\SimpleTelegramBot\\bot.db")
+func ActuallyAnswer(optionID int64) (current *Item, next *Item, currentIsRight bool, lastSubquestion bool, lastQuestion bool, prepinanie string, err error) {
+	db, err := sql.Open("sqlite", "bot.db")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -519,7 +581,15 @@ func ActuallyAnswer(optionID int64) (current *Item, next *Item, currentIsRight b
     LIMIT 1
 	)
 
-	SELECT *
+	SELECT 
+		question_id,
+		question_text,
+		subquestion_id,
+		subquestion_text,
+		seq_num,
+		currentIsRight,
+		lastSubquestion,
+		COALESCE(prepinanie, '') AS prepinanie
 	FROM (
 		SELECT * FROM current
 		UNION ALL
@@ -537,11 +607,8 @@ func ActuallyAnswer(optionID int64) (current *Item, next *Item, currentIsRight b
 	}
 
 	if rows.Next() {
-		var sort_order int64
-		var row_type string
-		var dummyPrepinanie sql.NullBool
-		if err := rows.Scan(&sort_order,
-			&row_type,
+		var dummyPrepinanie sql.NullString
+		if err := rows.Scan(
 			&current.QuestionID,
 			&current.Question,
 			&current.AnswerID,
@@ -578,12 +645,9 @@ func ActuallyAnswer(optionID int64) (current *Item, next *Item, currentIsRight b
 		Options: make(map[int64]string),
 	}
 	if rows.Next() {
-		var sort_order int64
-		var row_type string
 		var dummyRight sql.NullBool
 		var dummyLast sql.NullBool
-		if err := rows.Scan(&sort_order,
-			&row_type,
+		if err := rows.Scan(
 			&next.QuestionID,
 			&next.Question,
 			&next.AnswerID,
@@ -614,13 +678,15 @@ func ActuallyAnswer(optionID int64) (current *Item, next *Item, currentIsRight b
 
 			next.Options[optID] = text
 		}
+	} else {
+		lastQuestion = true
 	}
 
-	return current, next, currentIsRight, lastSubquestion, prepinanie, nil
+	return current, next, currentIsRight, lastSubquestion, lastQuestion, prepinanie, nil
 }
 
 func LevelsList(bot *tgbotapi.BotAPI, msg *tgbotapi.Message) {
-	db, err := sql.Open("sqlite", "C:\\Work\\SimpleTelegramBot\\bot.db")
+	db, err := sql.Open("sqlite", "bot.db")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -655,7 +721,7 @@ func LevelsList(bot *tgbotapi.BotAPI, msg *tgbotapi.Message) {
 }
 
 func LoadItem(ExerciseID int64) Item {
-	db, err := sql.Open("sqlite", "C:\\Work\\SimpleTelegramBot\\bot.db")
+	db, err := sql.Open("sqlite", "bot.db")
 	if err != nil {
 		log.Fatal(err)
 	}
