@@ -37,7 +37,7 @@ func main() {
 
 	// --- SQLite ---
 	log.Println(text)
-	db, err := sql.Open("sqlite", "C:\\Work\\SimpleTelegramBot\\bot.db")
+	db, err := sql.Open("sqlite", "C:\\Work\\LinguisticCombinatorics\\LinguisticCombinatorics\\cmd\\bot\\bot.db")
 	if err != nil {
 		log.Fatal(err)
 	}
