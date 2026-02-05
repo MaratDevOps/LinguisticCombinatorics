@@ -16,9 +16,8 @@ import (
 
 // Команды бота и их описания
 var commands = map[string]string{
-	"start":  "Запустить бота",
-	"help":   "Помощь по командам",
-	"level1": "Начать первое упражнение",
+	"start": "Запустить бота",
+	"help":  "Помощь по командам",
 }
 
 type Item struct {
@@ -68,10 +67,6 @@ func main() {
 			handleStartCommand(bot, update.Message)
 		case "help":
 			handleHelpCommand(bot, update.Message)
-		case "level1":
-			handleLevel1Command(bot, update.Message)
-		case "initBD":
-			handleInitBD(bot, update.Message)
 		default:
 			handleTextMessage(bot, update.Message)
 		}
@@ -108,32 +103,10 @@ func handleHelpCommand(bot *tgbotapi.BotAPI, msg *tgbotapi.Message) {
 	sendMessage(bot, msg.Chat.ID, helpText)
 }
 
-// Обработчик команды /level1
-func handleLevel1Command(bot *tgbotapi.BotAPI, msg *tgbotapi.Message) {
-	//Questions := initData()
-	//log.Printf("%s", Questions)
-	//InitQuestionField(Questions, bot, msg)
-
-}
-
 // Обработчик обычных текстовых сообщений
 func handleTextMessage(bot *tgbotapi.BotAPI, msg *tgbotapi.Message) {
 	reply := "Я не понимаю твоего сообщения. Попробуй /help"
 	sendMessage(bot, msg.Chat.ID, reply)
-}
-
-func handleInitBD(bot *tgbotapi.BotAPI, msg *tgbotapi.Message) {
-	db, err := sql.Open("sqlite", "bot.db")
-	if err != nil {
-		log.Fatal(err)
-	}
-	err = db.Ping()
-	if err != nil {
-		log.Fatal(err)
-	}
-	reply := "Ищи файлик базы"
-	sendMessage(bot, msg.Chat.ID, reply)
-	defer db.Close()
 }
 
 // Утилита для отправки сообщений
@@ -323,30 +296,7 @@ func handleCallbackQuery(bot *tgbotapi.BotAPI, CallbackQuery *tgbotapi.CallbackQ
 	bot.Request(answerCbq)
 }
 
-func initData() [][]Item {
-	var data [][]Item
-	group := []Item{
-		{Question: "они закончат?", Answer: "Алар", SeqNum: 1, Prepinanie: false, Options: map[int64]string{1: "Мин", 2: "Алар", 3: "Ул", 4: "Син", 5: "Сез", 6: "Без"}},
-		{Question: "они закончат?", Answer: " ", SeqNum: 2, Prepinanie: true, Options: nil},
-		{Question: "они закончат?", Answer: "бетер", SeqNum: 3, Prepinanie: false, Options: map[int64]string{7: "башл", 8: "тот", 9: "бир", 10: "уйла", 11: "чыг", 12: "чык", 13: "бетер", 14: "уйл", 15: "башла"}},
-		{Question: "они закончат?", Answer: "әр", SeqNum: 4, Prepinanie: false, Options: map[int64]string{16: "әр", 17: "ыр", 18: "ар", 19: "те", 20: "ты", 21: "ды"}},
-		{Question: "они закончат?", Answer: "ләр", SeqNum: 5, Prepinanie: false, Options: map[int64]string{22: "быз", 23: "без", 24: "сыз", 25: "сез", 26: "лар", 27: "нар", 28: "ләр"}},
-		{Question: "они закончат?", Answer: "ме", SeqNum: 6, Prepinanie: false, Options: map[int64]string{29: "ме", 30: "мә", 31: "мә", 32: "ми", 33: "мы", 34: "мый"}},
-	}
-
-	data = append(data, group)
-	group1 := []Item{
-		{Question: "мы закончили?", Answer: "Без", SeqNum: 1, Prepinanie: false, Options: map[int64]string{35: "Мин", 36: "Без", 37: "Алар", 38: "Ул", 39: "Син", 40: "Сез"}},
-		{Question: "мы закончили?", Answer: " ", SeqNum: 2, Prepinanie: true, Options: nil},
-		{Question: "мы закончили?", Answer: "бетер", SeqNum: 3, Prepinanie: false, Options: map[int64]string{47: "башла", 48: "бетер", 49: "чыг", 50: "тот", 51: "уйла"}},
-		{Question: "мы закончили?", Answer: "де", SeqNum: 4, Prepinanie: false, Options: map[int64]string{12: "де", 13: "ды", 14: "те", 15: "ты"}},
-		{Question: "мы закончили?", Answer: "к", SeqNum: 5, Prepinanie: false, Options: map[int64]string{56: "м", 57: "к", 58: "ң", 59: "гыз", 60: "сыз"}},
-		{Question: "мы закончили?", Answer: "ме", SeqNum: 6, Prepinanie: false, Options: map[int64]string{61: "ме", 62: "мә", 63: "ми", 64: "мый"}},
-	}
-	data = append(data, group1)
-	return data
-}
-
+// сформировать форму упражения
 func InitQuestionField(bot *tgbotapi.BotAPI, msg *tgbotapi.Message, ExerciseID int64) {
 
 	firstQuestions := LoadItem(ExerciseID)
@@ -373,87 +323,7 @@ func InitQuestionField(bot *tgbotapi.BotAPI, msg *tgbotapi.Message, ExerciseID i
 	bot.Send(newMsg)
 }
 
-func selectActuallyAnswer(questions [][]Item, optionID int64) (current *Item, next *Item, currentIsRight bool, prepinanie string, err error) {
-	prepinanie = ""
-	// Ищем текущий Item с OptionID
-	for _, group := range questions {
-		for i := range group {
-			item := &group[i] // берём указатель, чтобы вернуть ссылку
-			if item.Options != nil {
-				if _, ok := item.Options[optionID]; ok {
-					current = item
-					break
-				}
-			}
-		}
-		if current != nil {
-			break
-		}
-	}
-
-	if current == nil {
-		return nil, nil, false, "", fmt.Errorf("OptionID %d не найден", optionID)
-	}
-
-	// Ищем следующий Item с SeqNum на 1 больше
-	for _, group := range questions {
-		for i := range group {
-			item := &group[i]
-			if item.SeqNum == current.SeqNum+1 {
-				next = item
-				break
-			}
-		}
-		if next != nil {
-			break
-		}
-	}
-
-	x := current
-	for _, group := range questions {
-		for i := range group {
-			item := &group[i]
-
-			if item.SeqNum != x.SeqNum+1 {
-				continue
-			}
-
-			// 🔹 если условие выполнено — пропускаем элемент
-			if item.Prepinanie {
-				if item.Answer == " " {
-					prepinanie = "\u00A0"
-				} else {
-					prepinanie = item.Answer
-				}
-
-				x = item
-				continue
-			}
-
-			// 🔹 нашли нужный следующий элемент
-			next = item
-			break
-		}
-
-		if next != nil {
-			break
-		}
-	}
-
-	currentOption, ok := current.Options[optionID]
-	if !ok {
-		return nil, nil, false, "", fmt.Errorf("OptionID %d не найден", optionID)
-	}
-	if current.Answer == currentOption {
-		currentIsRight = true
-	} else {
-		currentIsRight = false
-	}
-	log.Printf("prepinanie: %s", prepinanie)
-	// next может быть nil, если такого SeqNum нет
-	return current, next, currentIsRight, prepinanie, nil
-}
-
+// получить текущий следующий вопрос и признак правильного ответа
 func ActuallyAnswer(optionID int64) (current *Item, next *Item, currentIsRight bool, lastSubquestion bool, lastQuestion bool, prepinanie string, err error) {
 	db, err := sql.Open("sqlite", "bot.db")
 	if err != nil {
@@ -685,6 +555,7 @@ func ActuallyAnswer(optionID int64) (current *Item, next *Item, currentIsRight b
 	return current, next, currentIsRight, lastSubquestion, lastQuestion, prepinanie, nil
 }
 
+// вывести список упражнений
 func LevelsList(bot *tgbotapi.BotAPI, msg *tgbotapi.Message) {
 	db, err := sql.Open("sqlite", "bot.db")
 	if err != nil {
@@ -720,6 +591,7 @@ func LevelsList(bot *tgbotapi.BotAPI, msg *tgbotapi.Message) {
 
 }
 
+// получить первый вопрос из упражнения
 func LoadItem(ExerciseID int64) Item {
 	db, err := sql.Open("sqlite", "bot.db")
 	if err != nil {
